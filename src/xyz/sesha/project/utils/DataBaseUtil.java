@@ -41,7 +41,8 @@ public class DataBaseUtil {
     try {
       if (DB_CLEAR_FLAG) {
         jedis.flushDB();
-        jedis.set("user:0", "{\"id\":0, \"time\":0, \"name\":\"0\", \"pwhash\":\"0\"}");
+        jedis.set("user:0", "{\"id\":\"0\", \"time\":0, \"name\":\"°×Ò¯\", \"pwhash\":\"0\"}");
+        jedis.set("user:°×Ò¯", "0");
         jedis.set(DB_INDEX_KEY, "1");
         ret = true;
       } else {
