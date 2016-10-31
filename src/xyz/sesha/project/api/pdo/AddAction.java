@@ -1,8 +1,11 @@
 package xyz.sesha.project.api.pdo;
 
+import java.util.Collection;
+
 import org.apache.log4j.Logger;
 
 import net.sf.json.JSONObject;
+import xyz.sesha.project.api.AbstractApiAction;
 
 /**
  * 前端API请求响应类
@@ -14,7 +17,7 @@ import net.sf.json.JSONObject;
  * 
  * @author Administrator
  */
-public class AddAction {
+public class AddAction extends AbstractApiAction {
   
   /**
    * 获取Log4j相关Logger
@@ -22,47 +25,20 @@ public class AddAction {
   private static Logger logger = Logger.getLogger(AddAction.class);
 
   /**
-   * 从前端传来的Http参数params
+   * 添加新的pdo
+   * @param pdos pdo的json字符串的容器
+   * @return 返回执行结果，成功则返回true，失败则返回false，当返回失败时不会产生任何影响
    */
-  private String params;
-  
-  /**
-   * 返回给前端的Json字符串响应
-   */
-  private JSONObject result;
-
-  /**
-   * @return the params
-   */
-  public String getParams() {
-    return params;
-  }
-
-  /**
-   * @param params the params to set
-   */
-  public void setParams(String params) {
-    this.params = params;
+  public static boolean add(Collection<String> pdos) {
+    return true;
   }
   
-  /**
-   * @return the result
-   */
-  public JSONObject getResult() {
-    return result;
-  }
-
-  /**
-   * @param result the result to set
-   */
-  public void setResult(JSONObject result) {
-    this.result = result;
+  @Override
+  public boolean checkParamsJsonFormat() {
+    return true;
   }
   
-  /**
-   * Action请求处理方法
-   * @return 返回success字符串
-   */
+  @Override
   public String execute() {
 
     JSONObject paramsJsonObj = JSONObject.fromObject(params);

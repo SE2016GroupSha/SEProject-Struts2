@@ -3,6 +3,7 @@ package xyz.sesha.project.api.pdo;
 import org.apache.log4j.Logger;
 
 import net.sf.json.JSONObject;
+import xyz.sesha.project.api.AbstractApiAction;
 
 /**
  * 前端API请求响应类
@@ -14,7 +15,7 @@ import net.sf.json.JSONObject;
  * 
  * @author Administrator
  */
-public class CheckNameAction {
+public class CheckNameAction extends AbstractApiAction {
   
   /**
    * 获取Log4j相关Logger
@@ -22,47 +23,21 @@ public class CheckNameAction {
   private static Logger logger = Logger.getLogger(CheckNameAction.class);
 
   /**
-   * 从前端传来的Http参数params
+   * 检查pdo名称是否可用(检查是否存在)
+   * @param userId user的id
+   * @param pdoName 待检查的pdo名称
+   * @return 可用返回true，不可用返回false
    */
-  private String params;
-  
-  /**
-   * 返回给前端的Json字符串响应
-   */
-  private JSONObject result;
-
-  /**
-   * @return the params
-   */
-  public String getParams() {
-    return params;
-  }
-
-  /**
-   * @param params the params to set
-   */
-  public void setParams(String params) {
-    this.params = params;
+  public static boolean check(String userId, String pdoName) {
+    return true;
   }
   
-  /**
-   * @return the result
-   */
-  public JSONObject getResult() {
-    return result;
-  }
-
-  /**
-   * @param result the result to set
-   */
-  public void setResult(JSONObject result) {
-    this.result = result;
+  @Override
+  public boolean checkParamsJsonFormat() {
+    return true;
   }
   
-  /**
-   * Action请求处理方法
-   * @return 返回success字符串
-   */
+  @Override
   public String execute() {
 
     JSONObject paramsJsonObj = JSONObject.fromObject(params);

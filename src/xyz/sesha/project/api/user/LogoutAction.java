@@ -8,26 +8,25 @@ import xyz.sesha.project.api.AbstractApiAction;
 /**
  * 前端API请求响应类
  * <br>
- * <br>URL： api/user/reg
- * <br>参数：params={"user": user}
+ * <br>URL： api/user/logout
+ * <br>参数：params={}
  * <br>返回：{"state": "success"} 或 {"state": "failed"}
- * <br>说明：注册新user，成功返回success，失败返回failed
+ * <br>说明：user退出，成功返回success，失败返回failed
  * 
  * @author Administrator
  */
-public class RegAction extends AbstractApiAction {
+public class LogoutAction extends AbstractApiAction {
   
   /**
    * 获取Log4j相关Logger
    */
-  private static Logger logger = Logger.getLogger(RegAction.class);
+  private static Logger logger = Logger.getLogger(LoginAction.class);
 
   /**
-   * user注册
-   * @param userJson user的json字符串
-   * @return 注册成功返回true，注册失败返回false
+   * user退出，直接影响一个session的user信息
+   * @return 退出成功返回true，退出失败返回false
    */
-  public static boolean register(String userJson) {
+  public static boolean logout() {
     return true;
   }
   

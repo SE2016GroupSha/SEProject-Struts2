@@ -3,6 +3,7 @@ package xyz.sesha.project.api.user;
 import org.apache.log4j.Logger;
 
 import net.sf.json.JSONObject;
+import xyz.sesha.project.api.AbstractApiAction;
 
 /**
  * 前端API请求响应类
@@ -14,7 +15,7 @@ import net.sf.json.JSONObject;
  * 
  * @author Administrator
  */
-public class LoginAction {
+public class LoginAction extends AbstractApiAction {
   
   /**
    * 获取Log4j相关Logger
@@ -22,47 +23,20 @@ public class LoginAction {
   private static Logger logger = Logger.getLogger(LoginAction.class);
 
   /**
-   * 从前端传来的Http参数params
+   * user登陆，直接影响一个session的user信息
+   * @param userJson user的json字符串
+   * @return 登陆成功返回true，登陆失败返回false
    */
-  private String params;
-  
-  /**
-   * 返回给前端的Json字符串响应
-   */
-  private JSONObject result;
-
-  /**
-   * @return the params
-   */
-  public String getParams() {
-    return params;
-  }
-
-  /**
-   * @param params the params to set
-   */
-  public void setParams(String params) {
-    this.params = params;
+  public static boolean login(String userJson) {
+    return true;
   }
   
-  /**
-   * @return the result
-   */
-  public JSONObject getResult() {
-    return result;
-  }
-
-  /**
-   * @param result the result to set
-   */
-  public void setResult(JSONObject result) {
-    this.result = result;
+  @Override
+  public boolean checkParamsJsonFormat() {
+    return true;
   }
   
-  /**
-   * Action请求处理方法
-   * @return 返回success字符串
-   */
+  @Override
   public String execute() {
 
     JSONObject paramsJsonObj = JSONObject.fromObject(params);

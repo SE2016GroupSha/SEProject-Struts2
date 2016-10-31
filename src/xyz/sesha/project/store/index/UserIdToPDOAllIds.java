@@ -1,6 +1,9 @@
 package xyz.sesha.project.store.index;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
+
 
 /**
  * 后端数据请求功能类：数据索引功能类
@@ -17,4 +20,21 @@ public class UserIdToPDOAllIds {
    */
   private static Logger logger = Logger.getLogger(UserIdToPDOAllIds.class);
 
+  /**
+   * 静态初始化，向基本数据类挂载钩子
+   * 注意：这部分代码只可以从基本数据类获取数据(get),修改数据可能会无限递归(add,edit,remove)
+   */
+  static {
+    
+  }
+  
+  /**
+   * 给定user的id，返回该user所有pdo的id的List
+   * @param id user的id
+   * @return 所有pdo的id的List
+   */
+  public static List<String> getAllIds(String id) {
+    return null;
+  }
+  
 }
