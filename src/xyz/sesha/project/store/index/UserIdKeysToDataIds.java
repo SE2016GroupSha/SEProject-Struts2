@@ -27,6 +27,7 @@ public class UserIdKeysToDataIds {
    */
   static {
     
+    logger.info("[UserIdKeysToDataIds] 静态初始化完成");
   }
   
   /**

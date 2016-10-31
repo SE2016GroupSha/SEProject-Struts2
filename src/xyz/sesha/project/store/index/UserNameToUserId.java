@@ -24,6 +24,7 @@ public class UserNameToUserId {
    */
   static {
     
+    logger.info("[UserNameToUserId] 静态初始化完成");
   }
   
   /**

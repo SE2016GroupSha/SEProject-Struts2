@@ -27,7 +27,7 @@ public class LoginAction extends AbstractApiAction {
    * @param userJson userµÄjson×Ö·û´®
    * @return µÇÂ½³É¹¦·µ»Øtrue£¬µÇÂ½Ê§°Ü·µ»Øfalse
    */
-  public static boolean login(String userJson) {
+  private boolean login(String userJson) {
     return true;
   }
   

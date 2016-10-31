@@ -29,7 +29,7 @@ public class AllAction extends AbstractApiAction {
    * @param userId user的id
    * @return 返回指定user的所有pdo的json字符串
    */
-  public static List<String> all(String userId) {
+  private List<String> all(String userId) {
     return null;
   }
   

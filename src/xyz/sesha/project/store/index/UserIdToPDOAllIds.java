@@ -26,6 +26,7 @@ public class UserIdToPDOAllIds {
    */
   static {
     
+    logger.info("[UserIdToPDOAllIds] 静态初始化完成");
   }
   
   /**

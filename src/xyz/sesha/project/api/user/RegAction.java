@@ -27,7 +27,7 @@ public class RegAction extends AbstractApiAction {
    * @param userJson userµÄjson×Ö·û´®
    * @return ×¢²á³É¹¦·µ»Øtrue£¬×¢²áÊ§°Ü·µ»Øfalse
    */
-  public static boolean register(String userJson) {
+  private boolean register(String userJson) {
     return true;
   }
   

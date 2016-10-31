@@ -28,7 +28,7 @@ public class CheckNameAction extends AbstractApiAction {
    * @param pdoName 待检查的pdo名称
    * @return 可用返回true，不可用返回false
    */
-  public static boolean check(String userId, String pdoName) {
+  private boolean check(String userId, String pdoName) {
     return true;
   }
   

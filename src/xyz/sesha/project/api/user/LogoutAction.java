@@ -26,7 +26,7 @@ public class LogoutAction extends AbstractApiAction {
    * user退出，直接影响一个session的user信息
    * @return 退出成功返回true，退出失败返回false
    */
-  public static boolean logout() {
+  private boolean logout() {
     return true;
   }
   

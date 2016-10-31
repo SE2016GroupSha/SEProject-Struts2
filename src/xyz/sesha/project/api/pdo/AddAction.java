@@ -29,7 +29,7 @@ public class AddAction extends AbstractApiAction {
    * @param pdos pdo的json字符串的容器
    * @return 返回执行结果，成功则返回true，失败则返回false，当返回失败时不会产生任何影响
    */
-  public static boolean add(Collection<String> pdos) {
+  private boolean add(Collection<String> pdos) {
     return true;
   }
   

@@ -27,7 +27,7 @@ public class CheckNameAction extends AbstractApiAction {
    * @param name 待检查的user名称
    * @return 可用返回true，不可用返回false
    */
-  public static boolean check(String name) {
+  private boolean check(String name) {
     return true;
   }
   

@@ -1,5 +1,7 @@
 package xyz.sesha.project.utils;
 
+import org.apache.log4j.Logger;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -10,6 +12,11 @@ import redis.clients.jedis.JedisPoolConfig;
  * @author Lu Xin
  */
 public class JedisUtil {
+  
+  /**
+   * 获取Log4j相关Logger
+   */
+  private static Logger logger = Logger.getLogger(JedisUtil.class);
 
   public static final String REDIS_IP = "127.0.0.1";     //IP
   public static final int REDIS_PORT = 6379;             //端口
@@ -35,18 +42,21 @@ public class JedisUtil {
    * 静态初始化连接池
    */
   static {
-      JedisPoolConfig config = new JedisPoolConfig();
-      
-      config.setMaxTotal(MAX_TOTAL);
-      config.setMaxIdle(MAX_IDLE);
-      config.setMinIdle(MIN_IDLE);
-      config.setMaxWaitMillis(MAX_WAIT_TIME);
-      config.setMinEvictableIdleTimeMillis(MIN_IDLE_TIME);
-      config.setTestOnBorrow(TEST_ON_BORROW);
-      config.setTestOnReturn(TEST_ON_RETURN);
-      config.setTestWhileIdle(TEST_WHILE_IDLE);
 
-      jedisPool = new JedisPool(config, REDIS_IP, REDIS_PORT, CONN_TIMEOUT/*, REDIS_PASSWORD*/);
+    JedisPoolConfig config = new JedisPoolConfig();
+    
+    config.setMaxTotal(MAX_TOTAL);
+    config.setMaxIdle(MAX_IDLE);
+    config.setMinIdle(MIN_IDLE);
+    config.setMaxWaitMillis(MAX_WAIT_TIME);
+    config.setMinEvictableIdleTimeMillis(MIN_IDLE_TIME);
+    config.setTestOnBorrow(TEST_ON_BORROW);
+    config.setTestOnReturn(TEST_ON_RETURN);
+    config.setTestWhileIdle(TEST_WHILE_IDLE);
+
+    jedisPool = new JedisPool(config, REDIS_IP, REDIS_PORT, CONN_TIMEOUT/*, REDIS_PASSWORD*/);
+    
+    logger.info("[JedisUtil] 静态初始化完成");
   }
   
   

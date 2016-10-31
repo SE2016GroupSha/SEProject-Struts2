@@ -30,7 +30,7 @@ public class RelatedDataAction extends AbstractApiAction {
    * @param ids data的id的容器
    * @return 返回data的json字符串List
    */
-  public static List<String> getDatas(Collection<String> ids) {
+  private List<String> getDatas(Collection<String> ids) {
     return null;
   }
   
@@ -39,7 +39,7 @@ public class RelatedDataAction extends AbstractApiAction {
    * @param ids pdo的id的容器
    * @return 返回pdo的json字符串List
    */
-  public static List<String> getPdos(Collection<String> ids) {
+  private List<String> getPdos(Collection<String> ids) {
     return null;
   }
   
