@@ -92,7 +92,7 @@ public class PDO {
    * @param id pdo的id
    * @return 返回pdo的json字符串，若id不存在，则返回null
    */
-  public static String getPDOJson(String id) {
+  public static String getPDOJson(Long id) {
     return null;
   }
   
@@ -101,7 +101,7 @@ public class PDO {
    * @param ids pdo的id的容器
    * @return 返回pdo的json字符串的List
    */
-  public static List<String> getPDOJson(Collection<String> ids) {
+  public static List<String> getPDOJson(Collection<Long> ids) {
     return null;
   }
 }

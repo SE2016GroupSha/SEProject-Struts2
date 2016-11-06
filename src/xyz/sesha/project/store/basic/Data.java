@@ -93,7 +93,7 @@ public class Data {
    * @param id data的id
    * @return 返回data的json字符串，若id不存在，则返回null
    */
-  public static String getDataJson(String id) {
+  public static String getDataJson(Long id) {
     return null;
   }
   
@@ -102,7 +102,7 @@ public class Data {
    * @param ids data的id的容器
    * @return 返回data的json字符串的List
    */
-  public static List<String> getDataJson(Collection<String> ids) {
+  public static List<String> getDataJson(Collection<Long> ids) {
     return null;
   }
 }
