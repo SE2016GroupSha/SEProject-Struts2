@@ -31,10 +31,10 @@ public class UserIdToPDOAllIds {
   
   /**
    * 给定user的id，返回该user所有pdo的id的List
-   * @param id user的id
+   * @param userId user的id
    * @return 所有pdo的id的List
    */
-  public static List<String> getAllIds(String id) {
+  public static List<Long> getAllIds(long userId) {
     return null;
   }
   
