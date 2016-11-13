@@ -32,11 +32,11 @@ public class UserIdKeysToDataIds {
   
   /**
    * 给定user的id和关键词，模糊搜索，返回data的id的List
-   * @param userId user的id
+   * @param i user的id
    * @param keys 关键字容器
    * @return data的id的List
    */
-  public static List<String> getIds(String userId, Collection<String> keys) {
+  public static List<String> getIds(long i, Collection<String> keys) {
     return null;
   }
 
