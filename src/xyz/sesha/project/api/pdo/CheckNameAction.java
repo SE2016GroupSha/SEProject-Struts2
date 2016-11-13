@@ -2,7 +2,9 @@ package xyz.sesha.project.api.pdo;
 
 import org.apache.log4j.Logger;
 
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import xyz.sesha.project.store.index.UserIdPDONameToPDOId;
 import xyz.sesha.project.api.AbstractApiAction;
 
 /**
@@ -28,25 +30,62 @@ public class CheckNameAction extends AbstractApiAction {
    * @param pdoName 待检查的pdo名称
    * @return 可用返回true，不可用返回false
    */
-  private boolean check(String userId, String pdoName) {
-    return true;
+  private boolean check(long userId, String pdoName) {
+	  return -1L==UserIdPDONameToPDOId.getId(userId, pdoName);
   }
   
   @Override
   public boolean checkParamsJsonFormat() {
-    return true;
+	  boolean ret = true;
+	    
+	    try {
+	      JSONObject json = JSONObject.fromObject(params);
+	      
+	      //判断key是否存在
+	      if (!json.has("name")) {
+	        ret =  false;
+	      }
+	      
+	      //null值判断，包含在instanceof关键字中
+	      
+	      //name类型：java.lang.String
+	      Object nameObj = json.get("name");
+	      if (!(nameObj instanceof String)) {
+	        ret =  false;
+	      }
+
+	    } catch (JSONException e) {
+	      ret =  false;
+	    } catch (Exception e) {
+	      ret =  false;
+	    }
+
+	    return ret;
   }
   
   @Override
   public String execute() {
 
-    JSONObject paramsJsonObj = JSONObject.fromObject(params);
-    result = new JSONObject();
-    result.put("receive", paramsJsonObj);
-    
-    logger.info("参数: " + params);
-    logger.info("返回: " + result.toString());
-    
-    return "success";
+	  
+	    result = new JSONObject();
+	    
+	    //检验参数合法性
+	    if (!checkParamsJsonFormat()) {
+	      System.out.println("[API][api/pdo/checkname]: 非法参数(" + params + ")");
+	      result.put("valid", "false");
+	      return "success";
+	    }
+	    
+	    JSONObject paramsJson = JSONObject.fromObject(params);
+	    String name = paramsJson.getString("name");
+	    
+	    //判断name是否可用，并生成返回结果
+	    if (check(0, name)) {
+	      result.put("valid", "true");
+	    } else {
+	      result.put("valid", "false");
+	    }
+	    
+	    return "success";
   }
 }

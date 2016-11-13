@@ -33,8 +33,8 @@ public class UserIdPDONameToPDOId {
    * @param pdoName pdo的name
    * @return data的id，若不存在则返回null
    */
-  public static String getId(String userId, String pdoName) {
-    return null;
+  public static long getId(long userId, String pdoName) {
+    return 0;
   }
   
 }
