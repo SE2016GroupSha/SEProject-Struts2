@@ -26,7 +26,7 @@ import xyz.sesha.project.utils.JedisUtil;
  * <br>
  * <br>注意：对外提供的接口，只依赖全库唯一的id
  * 
- * @author luxin
+ * @author Lu Xin
  */
 public class User {
   

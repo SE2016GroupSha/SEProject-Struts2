@@ -31,7 +31,7 @@ public class UserIdPDONameToPDOId {
    * 给定user的id和pdo的name，返回pdo的id
    * @param userId user的id
    * @param pdoName pdo的name
-   * @return data的id，若不存在则返回null
+   * @return pdo的id，若不存在则返回null
    */
   public static String getId(String userId, String pdoName) {
     return null;
