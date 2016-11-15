@@ -11,7 +11,7 @@ import xyz.sesha.project.store.index.UserIdPDONameToPDOId;
  * 前端API请求响应类
  * <br>
  * <br>URL： api/pdo/checkname
- * <br>参数：params={"name": "坐车"}
+ * <br>参数：params={"name": "坐车"} (兼容参数：pdoname=坐车)
  * <br>返回：{"valid": "true"} 或 {"valid": "false"}
  * <br>说明：检查PDO名称是否可用(检查是否存在),可用返回true，不可用返回false
  * 
@@ -23,6 +23,25 @@ public class CheckNameAction extends AbstractApiAction {
    * 获取Log4j相关Logger
    */
   private static Logger logger = Logger.getLogger(CheckNameAction.class);
+  
+  /**
+   * 为前端适配的兼容参数
+   */
+  protected String pdoname;
+
+  /**
+   * @return the pdoname
+   */
+  public String getPdoname() {
+    return pdoname;
+  }
+
+  /**
+   * @param pdoname the pdoname to set
+   */
+  public void setPdoname(String pdoname) {
+    this.pdoname = pdoname;
+  }
 
   /**
    * 检查pdo名称是否可用(检查是否存在)
@@ -38,6 +57,12 @@ public class CheckNameAction extends AbstractApiAction {
   public boolean checkParamsJsonFormat() {
     boolean ret = true;
     
+    //兼容参数最高优先级
+    if (pdoname != null) {
+      return ret;
+    }
+    
+    //正常定义参数优先级次之
     try {
       JSONObject json = JSONObject.fromObject(params);
       
@@ -75,16 +100,28 @@ public class CheckNameAction extends AbstractApiAction {
       return "success";
     }
     
-    JSONObject paramsJson = JSONObject.fromObject(params);
-    String name = paramsJson.getString("name");
-    
-    //判断name是否可用，并生成返回结果
-    if (check("0", name)) {
-      result.put("valid", "true");
-    } else {
-      result.put("valid", "false");
+    //兼容参数最高优先级
+    if (pdoname != null) {
+      //判断name是否可用，并生成返回结果
+      if (check("0", pdoname)) {
+        result.put("valid", "true");
+      } else {
+        result.put("valid", "false");
+      }
     }
-    
+    //正常定义参数优先级次之
+    else {
+      JSONObject paramsJson = JSONObject.fromObject(params);
+      String name = paramsJson.getString("name");
+      
+      //判断name是否可用，并生成返回结果
+      if (check("0", name)) {
+        result.put("valid", "true");
+      } else {
+        result.put("valid", "false");
+      }
+    }
+
     return "success";
   }
 }
