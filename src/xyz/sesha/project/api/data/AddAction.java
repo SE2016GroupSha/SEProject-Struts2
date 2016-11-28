@@ -20,6 +20,7 @@ import xyz.sesha.project.store.basic.Data;
  * <br>参数：params={"datas": [data1, data2...]}
  * <br>返回：{"state": "success"} 或 {"state": "failed"}
  * <br>说明：添加新的数据，参数为data数组，成功返回success，失败返回failed，失败不会添加任何data
+ * <br>安全：已做多用户处理
  * 
  * @author Wan XiaoLong
  */

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -39,12 +40,6 @@ public class User {
    * 添加操作之后,执行的全部索引钩子
    */
   public static List<HookFunction> afterAddHook = new LinkedList<HookFunction>();
-  
-  /**
-   * <pr>保障基本数据的id全库唯一的键，里面存储自增数字
-   * <br>注意：这个只用于单用户单连接环境，多用户环境会产生同步问题
-   */
-  private static final String DB_INDEX_KEY = "dbindex";
   
   /**
    * 检验user的json字符串的合法性
@@ -139,34 +134,21 @@ public class User {
         return ret;
       }
     }
-    
-    //TODO:DB_INDEX_KEY存在同步问题
-    
+
     //开始添加数据
     Jedis jedis = JedisUtil.getJedis();
     try {
-      //获取DBIndex
-      long DBIndex = -1L;
-      DBIndex = Long.valueOf(jedis.get(DB_INDEX_KEY));
-      
       //添加新数据，并更新参数List内的id
       userJsons.clear();
       for (JSONObject json : jsons) {
-        String key = "user:" + String.valueOf(DBIndex);
-        json.put("id", String.valueOf(DBIndex));
+        //生成UUID
+        String uuid = UUID.randomUUID().toString();
+        String key = "user:" + uuid;
+        json.put("id", uuid);
         jedis.set(key, json.toString());
         userJsons.add(json.toString());
-        DBIndex++;
       }
-      
-      //更新DBIndex
-      jedis.set(DB_INDEX_KEY, String.valueOf(DBIndex));
-      
       ret = true; 
-    } catch (NumberFormatException e) {
-      logger.error("[Error][User][Add]：数据库DBIndex异常");
-      e.printStackTrace();
-      ret = false;
     } catch (Exception e) {
       logger.error("[Error][User][Add]：其他错误");
       e.printStackTrace();

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -16,6 +17,7 @@ import redis.clients.jedis.Jedis;
 import xyz.sesha.project.store.index.HookFunction;
 import xyz.sesha.project.store.index.UserIdPDONameToPDOId;
 import xyz.sesha.project.utils.JedisUtil;
+import xyz.sesha.project.utils.UserUtil;
 
 /**
  * 后端数据请求功能类：基本数据操作类
@@ -40,12 +42,6 @@ public class PDO {
    * 添加操作之后,执行的全部索引钩子
    */
   public static List<HookFunction> afterAddHook = new LinkedList<HookFunction>();
-  
-  /**
-   * <pr>保障基本数据的id全库唯一的键，里面存储自增数字
-   * <br>注意：这个只用于单用户单连接环境，多用户环境会产生同步问题
-   */
-  private static final String DB_INDEX_KEY = "dbindex";
   
   /**
    * 检验pdo的json字符串的合法性
@@ -144,21 +140,21 @@ public class PDO {
     ArrayList<JSONObject> jsons = new ArrayList<JSONObject>();
     for (String pdoJson : pdoJsons) {
       JSONObject json = JSONObject.fromObject(pdoJson);
-      jsons.add(json);
       
-      String name = json.getString("name");
-      String userId = json.getString("user");
-
-      //TODO:存在非法写入其他用户的可能
-      
-      //判断user是否存在
-      if (!User.hasUser(userId)) {
-        logger.error("[Error][PDO][Add]：添加数据时user并不存在");
+      String userId = UserUtil.getUserId();
+      //判断登陆
+      if (userId==null) {
+        logger.error("[Error][PDO][Add]：未登录");
         return ret;
       }
+      
+      //填写user并更新
+      json.put("user", userId);
+      jsons.add(json);
+      
+      
+      String name = json.getString("name");
         
-      //TODO:判断PDO的user与当前user相同
-    
       //pdo的name非空
       if (name.equals("")) {
         logger.error("[Error][PDO][Add]：添加数据时name是空字符串");
@@ -171,33 +167,20 @@ public class PDO {
       }
     }
 
-    //TODO:DB_INDEX_KEY存在同步问题
-    
     //开始添加数据
     Jedis jedis = JedisUtil.getJedis();
     try {
-      //获取DBIndex
-      long DBIndex = -1L;
-      DBIndex = Long.valueOf(jedis.get(DB_INDEX_KEY));
-      
       //添加新数据，并更新参数List内的id
       pdoJsons.clear();
       for (JSONObject json : jsons) {
-        String key = "pdo:" + String.valueOf(DBIndex);
-        json.put("id", String.valueOf(DBIndex));
+        //生成UUID
+        String uuid = UUID.randomUUID().toString();
+        String key = "pdo:" + uuid;
+        json.put("id", uuid);
         jedis.set(key, json.toString());
         pdoJsons.add(json.toString());
-        DBIndex++;
       }
-      
-      //更新DBIndex
-      jedis.set(DB_INDEX_KEY, String.valueOf(DBIndex));
-      
       ret = true; 
-    } catch (NumberFormatException e) {
-      e.printStackTrace();
-      logger.error("[Error][PDO][Add]：数据库DBIndex异常");
-      ret = false;
     } catch (Exception e) {
       e.printStackTrace();
       logger.error("[Error][PDO][Add]：其他错误");

@@ -15,6 +15,7 @@ import xyz.sesha.project.api.AbstractApiAction;
 import xyz.sesha.project.store.basic.Data;
 import xyz.sesha.project.store.basic.PDO;
 import xyz.sesha.project.store.index.UserIdKeysToDataIds;
+import xyz.sesha.project.utils.UserUtil;
 
 /**
  * 前端API请求响应类 <br>
@@ -36,11 +37,13 @@ public class FuzzyAction extends AbstractApiAction {
   /**
    * 根据给定的关键字列表，模糊搜索得到data的json字符串list
    * 
+   * @param userId 用户id
    * @param keys 关键字容器
    * @return 返回包含所有关键字的data的json字符串list
    */
-  private List<String> searchDatas(Collection<String> keys) {
-    List<String> dataIds = UserIdKeysToDataIds.getIds("0", keys);
+  private List<String> searchDatas(String userId, Collection<String> keys) {
+    
+    List<String> dataIds = UserIdKeysToDataIds.getIds(userId, keys);
     return Data.getDataJson(dataIds);
   }
 
@@ -107,6 +110,17 @@ public class FuzzyAction extends AbstractApiAction {
       result.put("pdos", pdoJsonArray);
       return "success";
     }
+    
+    //获取user的id
+    String id = UserUtil.getUserId();
+    if (id==null) {
+      JSONArray dataJsonArray = new JSONArray();
+      JSONArray pdoJsonArray = new JSONArray();
+      result.put("datas", dataJsonArray);
+      result.put("pdos", pdoJsonArray);
+      logger.info("[API][api/search/fuzzy]: 未登陆");
+      return "success";
+    }
 
     JSONObject paramsJsonObj = JSONObject.fromObject(params);
     JSONArray keyArray = paramsJsonObj.getJSONArray("keys");
@@ -122,7 +136,7 @@ public class FuzzyAction extends AbstractApiAction {
     }
 
     // 查询得到所有满足条件的data的json字符串
-    List<String> dataJsonStrings = searchDatas(keys);
+    List<String> dataJsonStrings = searchDatas(id, keys);
 
     // 对data按时间从大到小排序
     TreeMap<Long, JSONObject> sortTree =

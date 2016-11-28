@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 import xyz.sesha.project.api.AbstractApiAction;
 import xyz.sesha.project.store.basic.PDO;
 import xyz.sesha.project.store.index.UserIdToPDOAllIds;
+import xyz.sesha.project.utils.UserUtil;
 
 /**
  * 前端API请求响应类
@@ -56,9 +57,18 @@ public class AllAction extends AbstractApiAction {
       return "success";
     }
     
+    //获取user的id
+    String id = UserUtil.getUserId();
+    if (id==null) {
+      JSONArray pdoJsonArray = new JSONArray();
+      result.put("pdos", pdoJsonArray);
+      logger.info("[API][api/pdo/all]: 未登陆");
+      return "success";
+    }
+    
     //获取全部pdo
     JSONArray pdoJsonArray = new JSONArray();
-    List<String> pdoJsonStrings = all("0");
+    List<String> pdoJsonStrings = all(id);
     
     //对pdo按时间从大到小排序
     TreeMap<Long, JSONObject> sortTree = new TreeMap<Long, JSONObject>((n1, n2)->n2.compareTo(n1));

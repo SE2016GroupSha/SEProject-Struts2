@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
@@ -20,6 +21,7 @@ import redis.clients.jedis.Jedis;
 
 import xyz.sesha.project.store.index.HookFunction;
 import xyz.sesha.project.utils.JedisUtil;
+import xyz.sesha.project.utils.UserUtil;
 
 
 /**
@@ -45,12 +47,6 @@ public class Data {
    * 添加操作之后,执行的全部索引钩子
    */
   public static List<HookFunction> afterAddHook = new LinkedList<HookFunction>();
-  
-  /**
-   * <pr>保障基本数据的id全库唯一的键，里面存储自增数字
-   * <br>注意：这个只用于单用户单连接环境，多用户环境会产生同步问题
-   */
-  private static final String DB_INDEX_KEY = "dbindex";
   
   /**
    * 检验data的json字符串的合法性
@@ -159,15 +155,17 @@ public class Data {
 
       String pdoId = json.getString("pdo");
       
-      //TODO:存在非法写入其他用户的可能
-      
       //验证pdo合法性
       if (!PDO.hasPDO(pdoId)) {
         logger.error("[Error][Data][Add]：添加数据时pdo并不存在");
         return ret;
       }
 
-      //TODO:判断所有PDO的user与当前user相同
+      //判断所有PDO的user与当前user相同
+      if (!JSONObject.fromObject(PDO.getPDOJson(pdoId)).getString("user").equals(UserUtil.getUserId())) {
+        logger.error("[Error][Data][Add]：PDO的user与当前user不相同");
+        return ret;
+      }
 
       //pdo的fields与data的values个数应该相同
       JSONObject pdoJsonObj = JSONObject.fromObject(PDO.getPDOJson(pdoId));
@@ -195,30 +193,23 @@ public class Data {
 
     }
     
-    //TODO:DB_INDEX_KEY存在同步问题
     
     //开始添加数据
     Jedis jedis = JedisUtil.getJedis();
     try {
-      //获取DBIndex
-      long DBIndex = -1L;
-      DBIndex = Long.valueOf(jedis.get(DB_INDEX_KEY));
-      
       //生成键值对，并更新参数List内的id
       dataJsons.clear();
       List<String> keyValues = new ArrayList<String>();
       for (JSONObject json : jsons) {
-        String key = "data:" + String.valueOf(DBIndex);
-        json.put("id", String.valueOf(DBIndex));
+        //生成UUID
+        String uuid = UUID.randomUUID().toString();
+        String key = "data:" + uuid;
+        json.put("id", uuid);
         dataJsons.add(json.toString());
         keyValues.add(key);
         keyValues.add(json.toString());
-        DBIndex++;
       }
-      
-      //更新DBIndex
-      jedis.set(DB_INDEX_KEY, String.valueOf(DBIndex));
-      
+
       //添加新数据
       jedis.mset(keyValues.toArray(new String[keyValues.size()]));
       
@@ -288,10 +279,6 @@ public class Data {
       }
       
       ret = true; 
-    } catch (NumberFormatException e) {
-      logger.error("[Error][Data][Add]：数据库DBIndex异常");
-      e.printStackTrace();
-      ret = false;
     } catch (Exception e) {
       logger.error("[Error][Data][Add]：其他错误");
       e.printStackTrace();

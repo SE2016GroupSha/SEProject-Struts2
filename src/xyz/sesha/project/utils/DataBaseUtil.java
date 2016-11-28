@@ -15,18 +15,12 @@ public class DataBaseUtil {
    * 获取Log4j相关Logger
    */
   private static Logger logger = Logger.getLogger(DataBaseUtil.class);
-
-  /**
-   * <pr>保障基本数据的id全库唯一的键，里面存储自增数字
-   * <br>注意：这个只用于单用户单连接环境，多用户环境会产生同步问题
-   */
-  private static final String DB_INDEX_KEY = "dbindex";
   
   /**
    * <pr>数据库清空标记，如置为true，InitDB方法执行时会清空数据库
    * <br>注意：只在开发阶段供开发者使用
    */
-  private static final boolean DB_CLEAR_FLAG = true;
+  private static final boolean DB_CLEAR_FLAG = false;
   
   /**
    * 数据库初始化方法，在系统初始化时被调用
@@ -41,15 +35,7 @@ public class DataBaseUtil {
     try {
       if (DB_CLEAR_FLAG) {
         jedis.flushDB();
-        jedis.set("user:0", "{\"id\":\"0\", \"time\":0, \"name\":\"白爷\", \"pwhash\":\"0\"}");
-        jedis.set("user:白爷", "0");
-        jedis.set(DB_INDEX_KEY, "1");
         ret = true;
-      } else {
-        if (!jedis.exists(DB_INDEX_KEY)) {
-          logger.error("[DataBaseUtil][InitDB]：dbindex键不存在");
-          ret = false;
-        }
       }
     } catch (Exception e) {
       e.printStackTrace();

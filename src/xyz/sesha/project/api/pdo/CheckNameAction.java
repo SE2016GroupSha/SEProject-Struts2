@@ -6,6 +6,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import xyz.sesha.project.api.AbstractApiAction;
 import xyz.sesha.project.store.index.UserIdPDONameToPDOId;
+import xyz.sesha.project.utils.UserUtil;
 
 /**
  * 前端API请求响应类
@@ -100,10 +101,18 @@ public class CheckNameAction extends AbstractApiAction {
       return "success";
     }
     
+    //获取user的id
+    String id = UserUtil.getUserId();
+    if (id==null) {
+      logger.info("[API][api/pdo/checkname]: 未登陆");
+      result.put("valid", "false");
+      return "success";
+    }
+    
     //兼容参数最高优先级
     if (pdoname != null) {
       //判断name是否可用，并生成返回结果
-      if (check("0", pdoname)) {
+      if (check(id, pdoname)) {
         result.put("valid", "true");
       } else {
         result.put("valid", "false");
@@ -115,7 +124,7 @@ public class CheckNameAction extends AbstractApiAction {
       String name = paramsJson.getString("name");
       
       //判断name是否可用，并生成返回结果
-      if (check("0", name)) {
+      if (check(id, name)) {
         result.put("valid", "true");
       } else {
         result.put("valid", "false");

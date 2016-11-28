@@ -22,7 +22,7 @@ import xyz.sesha.project.store.index.UserNameToUserId;
 
 
 /**
- * 前端基本测试类
+ * 前端基本测试类(单用户!!已过时！！)
  * 
  * <p>对API请求，以及Store逻辑进行测试
  *

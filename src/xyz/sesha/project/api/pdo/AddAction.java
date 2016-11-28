@@ -20,6 +20,7 @@ import xyz.sesha.project.store.basic.PDO;
  * <br>参数：params={"pdos": [pdo1, pdo2...]}
  * <br>返回：{"state": "success"} 或 {"state": "failed"}
  * <br>说明：添加新的PDO，参数为pdo数组，成功返回success，失败返回failed，失败不会添加任何PDO
+ * <br>安全：已做多用户处理
  * 
  * @author Wan XiaoLong
  */

@@ -20,7 +20,8 @@ import xyz.sesha.project.store.basic.PDO;
  * URL： api/data/relateddata <br>
  * 参数：params={"ids": ["5", "4"...]} <br>
  * 返回：{"datas": [data1, data2...], "pdos": [pdo1, pdo2...]} <br>
- * 说明：获取已有数据的全部关联数据(无重复无序)以及对应PDO(无重复)，参数ids为id数组(数据的id)，返回data数组和pdo数组
+ * 说明：获取已有数据的全部关联数据(无重复无序)以及对应PDO(无重复)，参数ids为id数组(数据的id)，返回data数组和pdo数组<br>
+ * 安全：无需做多用户处理
  * 
  * @author Wan XiaoLong
  */

@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import net.sf.json.JSONObject;
 import xyz.sesha.project.api.AbstractApiAction;
+import xyz.sesha.project.utils.UserUtil;
 
 /**
  * 前端API请求响应类
@@ -13,7 +14,7 @@ import xyz.sesha.project.api.AbstractApiAction;
  * <br>返回：{"state": "success"} 或 {"state": "failed"}
  * <br>说明：user退出，成功返回success，失败返回failed
  * 
- * @author Administrator
+ * @author Si Aoran
  */
 public class LogoutAction extends AbstractApiAction {
   
@@ -27,7 +28,7 @@ public class LogoutAction extends AbstractApiAction {
    * @return 退出成功返回true，退出失败返回false
    */
   private boolean logout() {
-    return true;
+    return UserUtil.delUserId();
   }
   
   @Override
@@ -38,13 +39,27 @@ public class LogoutAction extends AbstractApiAction {
   @Override
   public String execute() {
 
-    JSONObject paramsJsonObj = JSONObject.fromObject(params);
     result = new JSONObject();
-    result.put("receive", paramsJsonObj);
     
-    logger.info("参数: " + params);
-    logger.info("返回: " + result.toString());
+    logger.info("[API][api/user/logout][请求]: params=" + params);
     
+    //检验参数合法性
+    if (!checkParamsJsonFormat()) {
+      logger.error("[API][ api/user/logout]: 非法参数(" + params + ")");
+      result.put("state", "failed");
+      logger.info("[API][api/user/logout][响应]: result=" + result);
+      return "success";
+    }
+    
+    //user注销，获取结果
+    if (logout()) {
+      result.put("state", "success");
+    } else {
+      result.put("state", "failed");
+    }
+    
+    logger.info("[API][api/user/logout][响应]: result=" + result);
     return "success";
+
   }
 }
