@@ -60,6 +60,18 @@
 				<param name="noCache">true</param>
 			</result>
 		</action>
+		<action name="checklogin" class="xyz.sesha.project.api.user.CheckLoginAction">
+			<result type="json">
+				<param name="root">result</param>
+				<param name="noCache">true</param>
+			</result>
+		</action>
+		<action name="username" class="xyz.sesha.project.api.user.UserNameAction">
+			<result type="json">
+				<param name="root">result</param>
+				<param name="noCache">true</param>
+			</result>
+		</action>
 		<action name="reg" class="xyz.sesha.project.api.user.RegAction">
 			<result type="json">
 				<param name="root">result</param>
