@@ -100,7 +100,7 @@ public class User {
   
   /**
    * 添加user的真实执行方法，直接读写Redis
-   * @param userJsons user的json字符串容器
+   * @param userJsons user的json字符串容器，如果执行成功，userJsons每一个元素的id和time都会更新
    * @return 返回执行结果，true则成功，false则失败
    */
   private static boolean innerAddUser(Collection<String> userJsons) {
@@ -138,13 +138,14 @@ public class User {
     //开始添加数据
     Jedis jedis = JedisUtil.getJedis();
     try {
-      //添加新数据，并更新参数List内的id
+      //添加新数据，并更新参数List内的id和time
       userJsons.clear();
       for (JSONObject json : jsons) {
         //生成UUID
         String uuid = UUID.randomUUID().toString();
         String key = "user:" + uuid;
         json.put("id", uuid);
+        json.put("time", System.currentTimeMillis()); //这个时间就是注册时间
         jedis.set(key, json.toString());
         userJsons.add(json.toString());
       }
@@ -159,7 +160,7 @@ public class User {
 
     return ret;
   }
-
+  
   /**
    * 添加user的方法，供外部访问
    * @param userJsons user的json字符串容器
@@ -169,7 +170,7 @@ public class User {
     
     boolean ret = false;
     
-    //转交给innerAddData处理
+    //转交给innerAddUser处理
     ret = innerAddUser(userJsons);
     
     //成功则执行所有索引钩子
@@ -190,6 +191,72 @@ public class User {
   @SuppressWarnings("serial")
   public static boolean addUser(String userJson) {
     return addUser(new ArrayList<String>(){{this.add(userJson);}});
+  }
+  
+  /**
+   * 修改user的方法，供外部访问
+   * <p>注意：非架构完善版本，user结构有大规模调整时必须弃用
+   * <br>说明：实际只允许修改pwhash，但pwhash并没有索引，故直接操作Jedis，未使用Hook和innerEditUser
+   * @param id 待修改的user的id
+   * @param field 待修改的字段的名称
+   * @param newValue 待修改的字段的新值
+   * @return 返回待修改的字段的旧值，失败返回null
+   */
+  public static Object editUser(String id, String field, Object newValue) {
+    
+    Object oldValue = null;
+    
+    //id和time字段不允许修改
+    if (field.equals("id") || field.equals("time")) {
+      logger.error("[Error][User][Edit]："+field+"字段不允许修改");
+      return null;
+    }
+    
+    //name字段暂时不支持修改
+    if (field.equals("name")) {
+      logger.error("[Error][User][Edit]：name字段暂时不支持修改");
+      return null;
+    }
+    
+    //判断id是否存在
+    String oldUserJson = getUserJson(id);
+    if (oldUserJson==null) {
+      logger.error("[Error][User][Edit]：id不存在");
+      return null;
+    }
+    
+    //判断field是否存在
+    JSONObject oldJsonObject = JSONObject.fromObject(oldUserJson);
+    if (!oldJsonObject.has(field)) {
+      logger.error("[Error][User][Edit]：待修改的field不存在");
+      return null;
+    }
+    
+    //判断newValue类型是否正确
+    oldValue = oldJsonObject.get(field);
+    if (oldValue.getClass()!=newValue.getClass()) {
+      logger.error("[Error][User][Edit]：待修改的新值与旧值类型不同");
+      return null;
+    }
+    
+    //生成新的json字符串
+    oldJsonObject.put(field, newValue);
+    String newUserJson = oldJsonObject.toString();
+    
+    //开始修改数据
+    Jedis jedis = JedisUtil.getJedis();
+    try {
+      String uuid = oldJsonObject.getString("id");
+      String key = "user:" + uuid;
+      jedis.set(key, newUserJson);
+    } catch (Exception e) {
+      logger.error("[Error][User][Edit]：其他错误");
+      e.printStackTrace();
+    } finally {
+      jedis.close();
+    }
+    
+    return oldValue;
   }
   
   /**

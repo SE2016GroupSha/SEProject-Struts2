@@ -170,13 +170,14 @@ public class PDO {
     //开始添加数据
     Jedis jedis = JedisUtil.getJedis();
     try {
-      //添加新数据，并更新参数List内的id
+      //添加新数据，并更新参数List内的id和time
       pdoJsons.clear();
       for (JSONObject json : jsons) {
         //生成UUID
         String uuid = UUID.randomUUID().toString();
         String key = "pdo:" + uuid;
         json.put("id", uuid);
+        json.put("time", System.currentTimeMillis()); //这个时间就是PDO创建时间
         jedis.set(key, json.toString());
         pdoJsons.add(json.toString());
       }
@@ -201,7 +202,7 @@ public class PDO {
     
     boolean ret = false;
     
-    //转交给innerAddData处理
+    //转交给innerAddPDO处理
     ret = innerAddPDO(pdoJsons);
     
     //成功则执行所有索引钩子
