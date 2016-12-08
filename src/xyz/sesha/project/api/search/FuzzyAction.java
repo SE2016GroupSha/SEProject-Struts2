@@ -1,9 +1,10 @@
 package xyz.sesha.project.api.search;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -139,15 +140,19 @@ public class FuzzyAction extends AbstractApiAction {
     List<String> dataJsonStrings = searchDatas(id, keys);
 
     // 对data按时间从大到小排序
-    TreeMap<Long, JSONObject> sortTree =
-        new TreeMap<Long, JSONObject>((n1, n2) -> n2.compareTo(n1));
-    for (String dataJsonString : dataJsonStrings) {
-      JSONObject jsonObj = JSONObject.fromObject(dataJsonString);
-      sortTree.put(jsonObj.getLong("time"), jsonObj);
-    }
+    Collections.sort(dataJsonStrings, new Comparator<String>() {
+      @Override
+      public int compare(String s1, String s2) {
+        JSONObject json1 = JSONObject.fromObject(s1);
+        JSONObject json2 = JSONObject.fromObject(s2);
+        return Long.valueOf(json1.getLong("time")).compareTo(Long.valueOf(json2.getLong("time")));
+      }
+    });
+    Collections.reverse(dataJsonStrings);
 
     // 把data添加到返回json中的datas数组中
-    for (JSONObject jsonObj : sortTree.values()) {
+    for (String jsonString : dataJsonStrings) {
+      JSONObject jsonObj = JSONObject.fromObject(jsonString);
       dataJsonArray.add(jsonObj);
     }
 

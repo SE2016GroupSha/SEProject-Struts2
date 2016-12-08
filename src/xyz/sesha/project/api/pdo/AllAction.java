@@ -1,7 +1,8 @@
 package xyz.sesha.project.api.pdo;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
@@ -71,14 +72,19 @@ public class AllAction extends AbstractApiAction {
     List<String> pdoJsonStrings = all(id);
     
     //对pdo按时间从大到小排序
-    TreeMap<Long, JSONObject> sortTree = new TreeMap<Long, JSONObject>((n1, n2)->n2.compareTo(n1));
-    for (String pdoJsonString : pdoJsonStrings) {
-      JSONObject jsonObj = JSONObject.fromObject(pdoJsonString);
-      sortTree.put(jsonObj.getLong("time"), jsonObj);
-    }
-    
+    Collections.sort(pdoJsonStrings, new Comparator<String>() {
+      @Override
+      public int compare(String s1, String s2) {
+        JSONObject json1 = JSONObject.fromObject(s1);
+        JSONObject json2 = JSONObject.fromObject(s2);
+        return Long.valueOf(json1.getLong("time")).compareTo(Long.valueOf(json2.getLong("time")));
+      }
+    });
+    Collections.reverse(pdoJsonStrings);
+          
     //生成返回结果
-    for (JSONObject jsonObj : sortTree.values()) {
+    for (String jsonString : pdoJsonStrings) {
+      JSONObject jsonObj = JSONObject.fromObject(jsonString);
       pdoJsonArray.add(jsonObj);
     }
     
