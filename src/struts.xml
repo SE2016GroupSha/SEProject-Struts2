@@ -42,6 +42,12 @@
 				<param name="noCache">true</param>
 			</result>
 		</action>
+		<action name="redata" class="xyz.sesha.project.api.data.ReDataAction">
+			<result type="json">
+				<param name="root">result</param>
+				<param name="noCache">true</param>
+			</result>
+		</action>
 	</package>
 	
 	<package name="api.search" namespace="/api/search" extends="json-default">
