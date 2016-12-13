@@ -19,7 +19,7 @@ import xyz.sesha.project.utils.JedisUtil;
 /**
  * 后端数据请求功能类：数据索引功能类
  * 
- * <p>形式1：user:[id]:search:data:fuzzy:all         ->(key1, key2...)
+ * <p>形式1(高危Bug不用)：user:[id]:search:data:fuzzy:all         ->(key1, key2...)
  * <br>形式2：user:[id]:search:data:fuzzy:[key]      ->(id1, id2...)
  * <br>说明：通过user的id和关键字,获取全部存在关键字的data的id，一对多映射
  * 
@@ -44,6 +44,7 @@ public class UserIdKeysToDataIds {
       @Override
       public void func(Collection<String> jsonStrings) {
         //思路：为每个data的values里面的每个字符串的每个子串，都建立一个word->dataIds的索引Set，相等的word对应同一Set
+        //2轮拓展：增加data的pdo的名称，data的pdo的fields
         
         Jedis jedis = JedisUtil.getJedis();
 
@@ -58,10 +59,10 @@ public class UserIdKeysToDataIds {
           
           //获取这组data数据的user的id
           JSONObject data0 = JSONObject.fromObject(jsonStrings.iterator().next());
-          String pdoId = data0.getString("pdo");
-          String pdoJsonString = jedis.get("pdo:"+pdoId);
-          JSONObject pdoJsonObj = JSONObject.fromObject(pdoJsonString);
-          String userId = pdoJsonObj.getString("user");
+          String pdoId0 = data0.getString("pdo");
+          String pdoJsonString0 = jedis.get("pdo:"+pdoId0);
+          JSONObject pdoJsonObj0 = JSONObject.fromObject(pdoJsonString0);
+          String userId = pdoJsonObj0.getString("user");
           
           //遍历所有新添加的data
           for (String jsonString : jsonStrings) {
@@ -91,6 +92,54 @@ public class UserIdKeysToDataIds {
                 }
               }
             }
+            
+            //-----------新增：pdo的name和fields(暂时不批量获取pdo的Json)------------------------
+            String pdoId = dataJsonObj.getString("pdo");
+            JSONObject pdoJsonObj = JSONObject.fromObject(jedis.get("pdo:"+pdoId));
+            String pdoName = pdoJsonObj.getString("name");
+            JSONArray fieldArray = pdoJsonObj.getJSONArray("fields");
+            
+            //对于pdo的name
+            for (int j=0; j<pdoName.length(); j++) {
+              for (int k=j; k<=pdoName.length(); k++) {
+                String word = pdoName.substring(j, k);
+                String key = "user:" + userId + ":search:data:fuzzy:" + word;
+                rawKeySet.add(word); //附带收集word裸值
+                if (keysMap.containsKey(key)) {
+                  TreeSet<String> wordValueSet = keysMap.get(key);
+                  wordValueSet.add(dataId);
+                  keysMap.replace(key, wordValueSet);
+                } else {
+                  TreeSet<String> wordValueSet = new TreeSet<String>();
+                  wordValueSet.add(dataId);
+                  keysMap.put(key, wordValueSet);
+                }
+              }
+            }
+            
+            //对于pdo的所有field
+            for (int i=0; i<fieldArray.size(); i++) {
+              String field = fieldArray.getString(i);
+              
+              //对每个field，穷举子串，生成word<->dataIdSet的Map(word存储为转换过的库键值)
+              for (int j=0; j<field.length(); j++) {
+                for (int k=j; k<=field.length(); k++) {
+                  String word = field.substring(j, k);
+                  String key = "user:" + userId + ":search:data:fuzzy:" + word;
+                  rawKeySet.add(word); //附带收集word裸值
+                  if (keysMap.containsKey(key)) {
+                    TreeSet<String> wordValueSet = keysMap.get(key);
+                    wordValueSet.add(dataId);
+                    keysMap.replace(key, wordValueSet);
+                  } else {
+                    TreeSet<String> wordValueSet = new TreeSet<String>();
+                    wordValueSet.add(dataId);
+                    keysMap.put(key, wordValueSet);
+                  }
+                }
+              }
+            }
+            
           }
           
           //添加形式1到Redis
@@ -117,6 +166,44 @@ public class UserIdKeysToDataIds {
     });
     
     logger.info("[UserIdKeysToDataIds] 静态初始化完成");
+  }
+  
+  /**
+   * 离线重建索引,慎用
+   */
+  public static void rebuildIndex() {
+  //public static void main(String[] args) {
+    
+    Jedis jedis = JedisUtil.getJedis();
+    
+    try {
+      
+      Set<String> oldIndexKeys = jedis.keys("user:*:search:data:fuzzy:*");
+      Long oldKeysCount = 0L;
+      if (oldIndexKeys.size() > 0) {
+        String[] oldIndexKeysArray = oldIndexKeys.toArray(new String[oldIndexKeys.size()]);
+        oldKeysCount = jedis.del(oldIndexKeysArray);
+      }
+      
+      System.out.println(oldKeysCount);
+      System.out.println(Data.afterAddHook.size());
+      
+      Set<String> allDataKeys = jedis.keys("data:*");
+      System.out.println(allDataKeys.size());
+      for (String key : allDataKeys) {
+        System.out.println(key);
+        String json = jedis.get(key);
+        ArrayList<String> tmp = new ArrayList<String>();
+        tmp.add(json);
+        Data.afterAddHook.get(0).func(tmp);
+      }
+      
+      
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      jedis.close();
+    }
   }
   
   /**
