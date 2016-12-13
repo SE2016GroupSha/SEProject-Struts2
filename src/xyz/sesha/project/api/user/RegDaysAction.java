@@ -12,8 +12,8 @@ import xyz.sesha.project.utils.UserUtil;
  * <br>
  * <br>URL：api/user/regdays
  * <br>参数：params={}
- * <br>返回：{"state": "success", "regdays": 10} 或 {"state": "failed"}
- * <br>说明：获取当前登录用户注册天数，已登录返回success和注册天数，未登录返回failed
+ * <br>返回：{"state": "success", "regdays": 10, "regtime":1477412545804} 或 {"state": "failed"}
+ * <br>说明：获取当前登录用户注册天数和注册时间，已登录返回success和注册天数，未登录返回failed
  * 
  * @author Administrator
  */
@@ -43,6 +43,18 @@ public class RegDaysAction extends AbstractApiAction {
     }
   }
   
+  /**
+   * 获取当前登陆用户注册时间
+   * @return 已登录返回用户注册时间，未登录返回null
+   */
+  private Long getRegTime() {
+    String id = UserUtil.getUserId();
+    if (id==null) {
+      return null;
+    } 
+    return JSONObject.fromObject(User.getUserJson(id)).getLong("time");
+  }
+  
   @Override
   public boolean checkParamsJsonFormat() {
     return true;
@@ -65,9 +77,11 @@ public class RegDaysAction extends AbstractApiAction {
     
     //检验登陆 
     Integer days = getRegDays();
-    if (days!=null) {
+    Long time = getRegTime();
+    if (days!=null && time!=null) {
       result.put("state", "success");
       result.put("regdays", days);
+      result.put("regtime", time);
     } else {
       result.put("state", "failed");
     }
