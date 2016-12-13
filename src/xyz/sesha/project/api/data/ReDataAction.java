@@ -38,18 +38,188 @@ public class ReDataAction extends AbstractApiAction {
   private static Logger logger = Logger.getLogger(ReDataAction.class);
 
   /**
-   * 获取当前user的全部数据
+   * 获取当前user当前pdo的推荐数据
    * 
    * @return 返回data的json字符串List
    */
   @SuppressWarnings("serial")
-  private List<String> getAllDatas() {
+  private List<String> getRecommendDatas(String pdoId) {
     String userId = UserUtil.getUserId();
     if (userId == null) {
       return new ArrayList<String>();
     }
+
+    String pdoJsonString = PDO.getPDOJson(pdoId);
+    JSONObject pdoJsonObject = JSONObject.fromObject(pdoJsonString);
+    
+    //当前PDO的name和fields
+    String pdoName = pdoJsonObject.getString("name");
+    List<String> pdoFields = new ArrayList<String>();
+    
+    JSONArray pdoFieldsArray = pdoJsonObject.getJSONArray("fields");
+    for (int i=0; i<pdoFieldsArray.size(); i++) {
+      pdoFields.add(pdoFieldsArray.getString(i));
+    }
+    
+    //全部数据
     List<String> dataIds = UserIdKeysToDataIds.getIds(userId, new ArrayList<String>(){{add("");}});
-    return Data.getDataJson(dataIds);
+    List<String> allDatas = Data.getDataJson(dataIds);
+    
+    //过滤同类型数据  & 过滤未来数据
+    List<String> filterDatas = new ArrayList<String>();
+    for (String dataJsonString : allDatas) {
+      JSONObject dataJson = JSONObject.fromObject(dataJsonString);
+      Long dataTime = dataJson.getLong("time");
+      String dataPdoId = dataJson.getString("pdo");
+      if (!dataPdoId.equals(pdoId) && dataTime<System.currentTimeMillis()) {
+        filterDatas.add(dataJsonString);
+      }
+    }
+    
+    // 对data按时间从大到小排序
+    Collections.sort(filterDatas, new Comparator<String>() {
+      @Override
+      public int compare(String s1, String s2) {
+        JSONObject json1 = JSONObject.fromObject(s1);
+        JSONObject json2 = JSONObject.fromObject(s2);
+        return Long.valueOf(json1.getLong("time")).compareTo(Long.valueOf(json2.getLong("time")));
+      }
+    });
+    Collections.reverse(filterDatas);
+    
+    //返回数据
+    List<String> recommendDatas = new ArrayList<String>();
+    
+    //遍历数据
+    datalabel:
+    for (String dataJsonString : filterDatas) {
+      if (recommendDatas.size() >= 5) {
+        break;
+      }
+      JSONObject dataJsonObject = JSONObject.fromObject(dataJsonString);
+      String dataPdoId = dataJsonObject.getString("pdo");
+      String dataPdoJsonString = PDO.getPDOJson(dataPdoId);
+      JSONObject dataPdoJsonObject = JSONObject.fromObject(dataPdoJsonString);
+      
+      //当前数据的pdo的name，pdo的fields，当前数据的values
+      String dataPdoName = dataPdoJsonObject.getString("name");
+      List<String> dataPdoFields = new ArrayList<String>();
+      List<String> dataValues = new ArrayList<String>();
+      
+      JSONArray dataPdoFieldsArray = dataPdoJsonObject.getJSONArray("fields");
+      for (int i=0; i<dataPdoFieldsArray.size(); i++) {
+        dataPdoFields.add(dataPdoFieldsArray.getString(i));
+      }
+      JSONArray dataValuesArray = dataJsonObject.getJSONArray("values");
+      for (int i=0; i<dataValuesArray.size(); i++) {
+        dataValues.add(dataValuesArray.getString(i));
+      }
+      
+      //算法开始
+
+      //1.data方包含pdo方
+      
+      //dataPdoName               pdoName
+      //dataPdoFields             pdoFields
+      //dataValues
+      
+      //1)dataPdoName
+      if (dataPdoName.contains(pdoName)) {
+        recommendDatas.add(dataJsonString);
+        continue datalabel;
+      }
+      for (String pdoField : pdoFields) {
+        if (dataPdoName.contains(pdoField)) {
+          recommendDatas.add(dataJsonString);
+          continue datalabel;
+        }
+      }
+      //2)dataPdoFields
+      for (String dataPdoField : dataPdoFields) {
+        if (dataPdoField.contains(pdoName)) {
+          recommendDatas.add(dataJsonString);
+          continue datalabel;
+        }
+        for (String pdoField : pdoFields) {
+          if (dataPdoField.contains(pdoField)) {
+            recommendDatas.add(dataJsonString);
+            continue datalabel;
+          }
+        }
+      }
+      //3)dataValues
+      for (String dataValue : dataValues) {
+        if (dataValue.contains(pdoName)) {
+          recommendDatas.add(dataJsonString);
+          continue datalabel;
+        }
+        for (String pdoField : pdoFields) {
+          if (dataValue.contains(pdoField)) {
+            recommendDatas.add(dataJsonString);
+            continue datalabel;
+          }
+        }
+      }
+      
+      //2.pdo方包含data方
+      
+      //pdoName               dataPdoName
+      //pdoFields             dataPdoFields
+      //                      dataValues
+      
+      //1)pdoName
+      if (pdoName.contains(dataPdoName)) {
+        recommendDatas.add(dataJsonString);
+        continue datalabel;
+      }
+      for (String dataPdoField : dataPdoFields) {
+        if (pdoName.contains(dataPdoField)) {
+          recommendDatas.add(dataJsonString);
+          continue datalabel;
+        }
+      }
+      for (String dataValue : dataValues) {
+        if (pdoName.contains(dataValue)) {
+          recommendDatas.add(dataJsonString);
+          continue datalabel;
+        }
+      }
+      //2)pdoFields
+      for (String pdoField : pdoFields) {
+        if (pdoField.contains(dataPdoName)) {
+          recommendDatas.add(dataJsonString);
+          continue datalabel;
+        }
+        for (String dataPdoField : dataPdoFields) {
+          if (pdoField.contains(dataPdoField)) {
+            recommendDatas.add(dataJsonString);
+            continue datalabel;
+          }
+        }
+        for (String dataValue : dataValues) {
+          if (pdoField.contains(dataValue)) {
+            recommendDatas.add(dataJsonString);
+            continue datalabel;
+          }
+        }
+      }
+      
+      //不满足任何包含，该数据被跳过
+    }
+    
+    //不足5个，从时间最近开始补位
+    if (recommendDatas.size() < 5) {
+      for (String dataJsonString : filterDatas) {
+        if (recommendDatas.size() >= 5) {
+          break;
+        }
+        if (!recommendDatas.contains(dataJsonString)) {
+          recommendDatas.add(dataJsonString);
+        }
+      }
+    }
+
+    return recommendDatas;
   }
 
   /**
@@ -110,10 +280,11 @@ public class ReDataAction extends AbstractApiAction {
     JSONObject paramsJson = JSONObject.fromObject(params);
     String pdoId = paramsJson.getString("pdo");
     
-    //暂未实现，目前只返回该user全部数据与该pdo类型数据的差集
-    List<String> allDataJsons = getAllDatas();
+    //推荐策略：各种名称、各种字段名、各种字段值，相互包含即视为推荐数据
+    List<String> allDataJsons = getRecommendDatas(pdoId);
     
     
+    //最多返回5个，这段重复逻辑暂时不删了
     //获取pdo过滤后的data的List，同时提取data的pdo的id并去重
     List<String> filterDataJsons = new ArrayList<String>();
     Set<String> filtePdoIdsSet = new TreeSet<String>();
